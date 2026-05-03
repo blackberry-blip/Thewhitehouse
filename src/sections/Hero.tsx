@@ -28,7 +28,7 @@ export default function Hero() {
       <div className="relative z-10 max-w-4xl mx-auto px-6 text-center pt-24 pb-20">
 
         {/* Brand label — expands in from tight letter-spacing */}
-        <p className="animate-hero-brand text-violet-400 text-xs sm:text-sm font-semibold tracking-[0.3em] uppercase mb-8 opacity-80">
+        <p className="animate-hero-brand text-violet-400 text-xs sm:text-sm font-semibold tracking-[0.3em] uppercase mb-8">
           The White House
         </p>
 

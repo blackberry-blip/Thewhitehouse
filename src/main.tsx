@@ -4,7 +4,10 @@ import { BrowserRouter } from 'react-router'
 import './index.css'
 import App from './App.tsx'
 
-// Always start at top of page — prevent browser restoring #hash scroll position
+// ── ALWAYS land on hero — strip any #hash from URL before React mounts ──
+if (window.location.hash) {
+  history.replaceState(null, '', window.location.pathname);
+}
 if ('scrollRestoration' in history) {
   history.scrollRestoration = 'manual';
 }
