@@ -297,7 +297,29 @@ export default function Registration() {
               <div className="space-y-5 animate-in fade-in duration-200">
                 <h3 className="font-bold text-gray-800 text-lg mb-1">Payment — Rs. 499</h3>
 
-                {/* QR */}
+                {/* What you get — short, bold, impactful */}
+                <div className="bg-violet-600 rounded-2xl p-5 text-white">
+                  <p className="text-xs font-semibold tracking-widest uppercase opacity-70 mb-3">Your Rs. 499 includes</p>
+                  <div className="space-y-2">
+                    {[
+                      ['📚', 'All subjects for the full first month'],
+                      ['🎥', 'Live interactive classes — every week'],
+                      ['📝', 'Mock tests & practice papers'],
+                      ['💡', 'Study resources & digital notes'],
+                      ['🚀', 'Tech-powered lessons built for your child'],
+                    ].map(([icon, text]) => (
+                      <div key={text} className="flex items-center gap-3">
+                        <span className="text-lg leading-none">{icon}</span>
+                        <span className="text-sm font-semibold">{text}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-white/20 flex items-center justify-between">
+                    <span className="text-white/70 text-xs">Everything above, for just</span>
+                    <span className="text-2xl font-black tracking-tight">Rs. 499</span>
+                  </div>
+                </div>
+
                 <div className="flex flex-col items-center bg-gray-50 rounded-2xl p-5">
                   <img
                     src="/esewa-qr.png"
