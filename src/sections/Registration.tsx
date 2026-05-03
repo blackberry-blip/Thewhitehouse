@@ -280,26 +280,26 @@ export default function Registration() {
                 <h3 className="font-bold text-gray-800 mb-4 text-lg">Payment — Rs. 499</h3>
                 <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
 
-                  {/* QR code + instructions */}
-                  <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start mb-5">
-                    <div className="shrink-0 text-center">
-                      <img
-                        src="/esewa-qr.png"
-                        alt="eSewa QR Code"
-                        className="w-40 h-40 rounded-xl border-2 border-green-200 object-contain bg-white p-2 mx-auto"
-                      />
-                      <p className="text-xs text-gray-500 mt-2">Scan with eSewa App</p>
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900 mb-1">How to pay:</p>
-                      <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
-                        <li>Open your <span className="font-semibold text-green-700">eSewa</span> app</li>
-                        <li>Scan the QR code <span className="text-gray-400">OR</span> send to <span className="font-bold text-gray-900">9701494422</span></li>
-                        <li>Enter amount: <span className="font-bold text-violet-700">Rs. 499</span></li>
-                        <li>Complete the payment</li>
-                        <li>Copy the <span className="font-semibold">Transaction Reference Number</span> from your eSewa confirmation</li>
-                      </ol>
-                    </div>
+                  {/* QR code — large and centered for easy scanning */}
+                  <div className="flex flex-col items-center mb-5">
+                    <img
+                      src="/esewa-qr.png"
+                      alt="eSewa QR Code"
+                      className="w-56 h-56 sm:w-64 sm:h-64 rounded-2xl border-2 border-green-200 object-contain bg-white p-3 shadow-md"
+                    />
+                    <p className="text-sm font-medium text-green-700 mt-2">📷 Scan with eSewa App</p>
+                    <p className="text-xs text-gray-500 mt-1">OR send manually to <span className="font-bold text-gray-800">9701494422</span></p>
+                  </div>
+
+                  {/* Step instructions */}
+                  <div className="bg-white border border-gray-100 rounded-xl p-4 mb-5">
+                    <p className="font-semibold text-gray-900 mb-2 text-sm">How to pay:</p>
+                    <ol className="text-sm text-gray-600 space-y-1.5 list-decimal list-inside">
+                      <li>Open your <span className="font-semibold text-green-700">eSewa</span> app</li>
+                      <li>Scan the QR above <span className="text-gray-400">OR</span> tap <em>Send Money</em> → <span className="font-bold text-gray-900">9701494422</span></li>
+                      <li>Enter amount: <span className="font-bold text-violet-700">Rs. 499</span></li>
+                      <li>Complete payment &amp; note the <span className="font-semibold">Transaction Reference</span></li>
+                    </ol>
                   </div>
 
                   {/* Transaction ref input */}
