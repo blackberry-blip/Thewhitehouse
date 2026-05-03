@@ -184,7 +184,6 @@ export default function Registration() {
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
                     placeholder="Student's full name"
-                    autoFocus
                   />
                 </div>
 

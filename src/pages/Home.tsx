@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Navbar from '@/sections/Navbar';
 import Hero from '@/sections/Hero';
 import About from '@/sections/About';
@@ -8,6 +9,10 @@ import Contact from '@/sections/Contact';
 import Footer from '@/sections/Footer';
 
 export default function Home() {
+  // Force scroll to top on mount — always land on hero
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   return (
     <div className="min-h-screen">
       <Navbar />
