@@ -12,11 +12,25 @@ export default function Home() {
     <div className="min-h-screen">
       <Navbar />
       <Hero />
-      <About />
-      <Objectives />
-      <Courses />
+
+      {/* Hidden on mobile — revealed when tapped in menu */}
+      <div className="hidden md:block mobile-hidden-section" id="about-wrapper">
+        <About />
+      </div>
+      <div className="hidden md:block mobile-hidden-section" id="objectives-wrapper">
+        <Objectives />
+      </div>
+      <div className="hidden md:block mobile-hidden-section" id="courses-wrapper">
+        <Courses />
+      </div>
+
+      {/* Registration is always visible — main mobile goal */}
       <Registration />
-      <Contact />
+
+      <div className="hidden md:block mobile-hidden-section" id="contact-wrapper">
+        <Contact />
+      </div>
+
       <Footer />
     </div>
   );

@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function Hero() {
   return (
@@ -13,13 +13,6 @@ export default function Hero() {
       </div>
 
       <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20">
-        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2 mb-8">
-          <Sparkles className="w-4 h-4 text-yellow-300" />
-          <span className="text-white/90 text-sm font-medium">
-            Online Education from Nepal
-          </span>
-        </div>
-
         <h1 className="text-5xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight mb-6">
           The White House
         </h1>
@@ -43,7 +36,8 @@ export default function Hero() {
           </Button>
         </a>
 
-        <div className="mt-16 grid grid-cols-3 gap-4 max-w-lg mx-auto">
+        {/* Stats — hidden on mobile for a cleaner experience */}
+        <div className="mt-16 hidden md:grid grid-cols-3 gap-4 max-w-lg mx-auto">
           <div className="text-center">
             <div className="text-3xl font-bold text-white">500+</div>
             <div className="text-sm text-violet-200">Students</div>

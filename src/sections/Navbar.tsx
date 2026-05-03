@@ -3,6 +3,14 @@ import { Link } from 'react-router'
 import { Menu, X, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// Map nav hrefs to their mobile wrapper div IDs
+const sectionWrappers: Record<string, string> = {
+  '#about': 'about-wrapper',
+  '#objectives': 'objectives-wrapper',
+  '#courses': 'courses-wrapper',
+  '#contact': 'contact-wrapper',
+};
+
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -21,6 +29,29 @@ export default function Navbar() {
     { label: 'Register', href: '#register' },
     { label: 'Contact', href: '#contact' },
   ];
+
+  const handleMobileNavClick = (href: string) => {
+    setIsOpen(false);
+
+    // If this section has a mobile wrapper, reveal it first
+    const wrapperId = sectionWrappers[href];
+    if (wrapperId) {
+      const wrapper = document.getElementById(wrapperId);
+      if (wrapper) {
+        wrapper.classList.remove('hidden');
+        wrapper.classList.add('block');
+      }
+    }
+
+    // Scroll to the section after a small delay so DOM updates
+    setTimeout(() => {
+      const sectionId = href.replace('#', '');
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 50);
+  };
 
   return (
     <nav
@@ -45,6 +76,7 @@ export default function Navbar() {
             </span>
           </a>
 
+          {/* Desktop nav */}
           <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
               <a
@@ -72,6 +104,7 @@ export default function Navbar() {
             </Link>
           </div>
 
+          {/* Mobile hamburger */}
           <button
             className="md:hidden p-2"
             onClick={() => setIsOpen(!isOpen)}
@@ -85,18 +118,18 @@ export default function Navbar() {
         </div>
       </div>
 
+      {/* Mobile menu */}
       {isOpen && (
         <div className="md:hidden bg-white border-t shadow-lg">
           <div className="px-4 py-3 space-y-2">
             {navLinks.map((link) => (
-              <a
+              <button
                 key={link.href}
-                href={link.href}
-                className="block text-gray-700 hover:text-violet-700 font-medium py-2"
-                onClick={() => setIsOpen(false)}
+                className="block w-full text-left text-gray-700 hover:text-violet-700 font-medium py-2"
+                onClick={() => handleMobileNavClick(link.href)}
               >
                 {link.label}
-              </a>
+              </button>
             ))}
             <Link
               to="/admin"

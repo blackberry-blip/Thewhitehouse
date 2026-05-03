@@ -41,7 +41,7 @@ export default async function handler(req, res) {
       return res.status(200).json(registrations);
     } catch (error) {
       console.error('GET registrations error:', error);
-      return res.status(500).json({ error: 'Failed to fetch registrations' });
+      return res.status(500).json({ error: 'Failed to fetch registrations', details: error.message });
     }
   }
 
@@ -64,6 +64,11 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
+      // Convert JS array to Postgres array literal string: {item1,item2}
+      const subjectsArray = Array.isArray(selectedSubjects) && selectedSubjects.length > 0
+        ? `{${selectedSubjects.map(s => `"${s}"`).join(',')}}`
+        : '{}';
+
       const rows = await sql`
         INSERT INTO registrations (
           full_name, age, class, school_name, guardian_contact,
@@ -71,7 +76,7 @@ export default async function handler(req, res) {
           payment_status, registration_date
         ) VALUES (
           ${fullName}, ${Number(age)}, ${Number(studentClass)}, ${schoolName},
-          ${guardianContact}, ${selectedSubjects || []}, ${Number(totalAmount)},
+          ${guardianContact}, ${subjectsArray}::text[], ${Number(totalAmount)},
           ${paymentRefNumber}, 'pending', NOW()
         )
         RETURNING
@@ -98,7 +103,7 @@ export default async function handler(req, res) {
       return res.status(201).json(registration);
     } catch (error) {
       console.error('POST registration error:', error);
-      return res.status(500).json({ error: 'Failed to create registration' });
+      return res.status(500).json({ error: 'Failed to create registration', details: error.message });
     }
   }
 
