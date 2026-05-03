@@ -1,36 +1,87 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import type { StudentRegistration } from '@/types';
 
-const STORAGE_KEY = 'whitehouse_registrations';
-
 export function useRegistrations() {
-  const [registrations, setRegistrations] = useState<StudentRegistration[]>(() => {
+  const [registrations, setRegistrations] = useState<StudentRegistration[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch all registrations from the API
+  const fetchRegistrations = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : [];
-    } catch {
-      return [];
+      const res = await fetch('/api/registrations');
+      if (!res.ok) {
+        throw new Error('Failed to fetch registrations');
+      }
+      const data: StudentRegistration[] = await res.json();
+      setRegistrations(data);
+    } catch (err) {
+      console.error('Fetch registrations error:', err);
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setLoading(false);
     }
-  });
-
-  const addRegistration = useCallback((reg: StudentRegistration) => {
-    setRegistrations((prev) => {
-      const updated = [reg, ...prev];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return updated;
-    });
   }, []);
 
-  const verifyPayment = useCallback((id: string) => {
-    setRegistrations((prev) => {
-      const updated = prev.map((r) =>
-        r.id === id ? { ...r, paymentStatus: 'verified' as const } : r
+  // Load registrations on mount
+  useEffect(() => {
+    fetchRegistrations();
+  }, [fetchRegistrations]);
+
+  // Add a new registration via the API
+  const addRegistration = useCallback(
+    async (
+      reg: Omit<StudentRegistration, 'id' | 'paymentStatus' | 'registrationDate'>
+    ): Promise<StudentRegistration | null> => {
+      setError(null);
+      try {
+        const res = await fetch('/api/registrations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(reg),
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Failed to submit registration');
+        }
+        const saved: StudentRegistration = await res.json();
+        setRegistrations((prev) => [saved, ...prev]);
+        return saved;
+      } catch (err) {
+        console.error('Add registration error:', err);
+        setError(err instanceof Error ? err.message : 'Something went wrong');
+        return null;
+      }
+    },
+    []
+  );
+
+  // Verify a payment via the API
+  const verifyPayment = useCallback(async (id: string) => {
+    setError(null);
+    try {
+      const res = await fetch('/api/registrations/verify', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to verify payment');
+      }
+      setRegistrations((prev) =>
+        prev.map((r) =>
+          r.id === id ? { ...r, paymentStatus: 'verified' as const } : r
+        )
       );
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return updated;
-    });
+    } catch (err) {
+      console.error('Verify payment error:', err);
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    }
   }, []);
 
+  // CSV export (client-side from loaded data)
   const exportToCSV = useCallback(() => {
     const headers = [
       'Name',
@@ -50,7 +101,7 @@ export function useRegistrations() {
       r.class,
       r.schoolName,
       r.guardianContact,
-      r.selectedSubjects.join(', '),
+      `"${(r.selectedSubjects || []).join(', ')}"`,
       r.totalAmount,
       r.paymentStatus,
       r.paymentRefNumber,
@@ -68,5 +119,13 @@ export function useRegistrations() {
     document.body.removeChild(link);
   }, [registrations]);
 
-  return { registrations, addRegistration, verifyPayment, exportToCSV };
+  return {
+    registrations,
+    loading,
+    error,
+    addRegistration,
+    verifyPayment,
+    exportToCSV,
+    refetch: fetchRegistrations,
+  };
 }

@@ -35,7 +35,10 @@ export default function Registration() {
     setSelectedSubjects([]);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
       !fullName ||
@@ -47,8 +50,10 @@ export default function Registration() {
     )
       return;
 
-    const registration: StudentRegistration = {
-      id: crypto.randomUUID(),
+    setSubmitting(true);
+    setSubmitError(null);
+
+    const saved = await addRegistration({
       fullName,
       age: Number(age),
       class: Number(studentClass),
@@ -57,13 +62,16 @@ export default function Registration() {
       selectedSubjects,
       totalAmount,
       paymentRefNumber: paymentRef,
-      paymentStatus: 'pending',
-      registrationDate: new Date().toISOString(),
-    };
+    });
 
-    addRegistration(registration);
-    setEnrollmentDetails(registration);
-    setSubmitted(true);
+    setSubmitting(false);
+
+    if (saved) {
+      setEnrollmentDetails(saved);
+      setSubmitted(true);
+    } else {
+      setSubmitError('Registration failed. Please try again.');
+    }
   };
 
   if (submitted && enrollmentDetails) {
@@ -283,9 +291,16 @@ export default function Registration() {
                 </div>
               )}
 
+              {submitError && (
+                <p className="text-sm text-red-600 text-center bg-red-50 border border-red-200 rounded-lg p-3">
+                  {submitError}
+                </p>
+              )}
+
               <Button
                 type="submit"
                 disabled={
+                  submitting ||
                   !fullName ||
                   !age ||
                   !studentClass ||
@@ -295,7 +310,7 @@ export default function Registration() {
                 }
                 className="w-full bg-violet-600 hover:bg-violet-700 text-lg py-6 rounded-xl font-semibold disabled:opacity-50"
               >
-                Complete Registration
+                {submitting ? 'Submitting...' : 'Complete Registration'}
               </Button>
             </form>
           </CardContent>

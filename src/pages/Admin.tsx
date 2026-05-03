@@ -45,7 +45,7 @@ export default function Admin() {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  const { registrations, verifyPayment, exportToCSV } = useRegistrations();
+  const { registrations, loading, error, verifyPayment, exportToCSV } = useRegistrations();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterClass, setFilterClass] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
@@ -298,6 +298,17 @@ export default function Admin() {
               </div>
             </div>
 
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
+                Error loading registrations: {error}
+              </div>
+            )}
+
+            {loading ? (
+              <div className="text-center py-12 text-gray-500">
+                Loading registrations...
+              </div>
+            ) : (
             <div className="overflow-x-auto -mx-2">
               <Table>
                 <TableHeader>
@@ -391,6 +402,7 @@ export default function Admin() {
                 </TableBody>
               </Table>
             </div>
+            )}
           </CardContent>
         </Card>
       </main>
