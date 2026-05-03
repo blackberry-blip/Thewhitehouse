@@ -182,6 +182,19 @@ export default function Admin() {
       .reduce((sum, r) => sum + r.totalAmount, 0),
   }), [registrations]);
 
+  // Subject-wise enrollment counts
+  const subjectStats = useMemo(() => {
+    const counts: Record<string, number> = {};
+    registrations.forEach((r) => {
+      (r.selectedSubjects || []).forEach((s) => {
+        counts[s] = (counts[s] || 0) + 1;
+      });
+    });
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([subject, count]) => ({ subject, count }));
+  }, [registrations]);
+
   // ─── Login screen ───
   if (!isLoggedIn) {
     return (
@@ -353,7 +366,7 @@ export default function Admin() {
             ) : (
               /* Class-wise tabs */
               <Tabs defaultValue="all">
-                <TabsList className="mb-4">
+                <TabsList className="mb-4 flex-wrap h-auto gap-1">
                   <TabsTrigger value="all">
                     All ({allRows.length})
                   </TabsTrigger>
@@ -362,6 +375,9 @@ export default function Admin() {
                   </TabsTrigger>
                   <TabsTrigger value="class10">
                     Class 10 ({class10Rows.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="subjects">
+                    By Subject
                   </TabsTrigger>
                 </TabsList>
 
@@ -373,6 +389,41 @@ export default function Admin() {
                 </TabsContent>
                 <TabsContent value="class10">
                   <RegistrationTable rows={class10Rows} onVerify={verifyPayment} />
+                </TabsContent>
+
+                {/* Subject-wise breakdown */}
+                <TabsContent value="subjects">
+                  {subjectStats.length === 0 ? (
+                    <div className="text-center py-12 text-gray-400">No subject data yet.</div>
+                  ) : (
+                    <div className="space-y-3">
+                      {subjectStats.map(({ subject, count }) => {
+                        const max = subjectStats[0]?.count || 1;
+                        const pct = Math.round((count / max) * 100);
+                        const totalPct = registrations.length > 0
+                          ? Math.round((count / registrations.length) * 100)
+                          : 0;
+                        return (
+                          <div key={subject} className="flex items-center gap-4">
+                            <div className="w-36 shrink-0 text-sm font-medium text-gray-700 truncate">{subject}</div>
+                            <div className="flex-1 bg-gray-100 rounded-full h-6 overflow-hidden">
+                              <div
+                                className="h-full bg-violet-500 rounded-full flex items-center px-3 transition-all"
+                                style={{ width: `${pct}%` }}
+                              >
+                                {pct > 20 && (
+                                  <span className="text-white text-xs font-bold">{count}</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="w-24 shrink-0 text-sm text-gray-500 text-right">
+                              {count} student{count !== 1 ? 's' : ''} ({totalPct}%)
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </TabsContent>
               </Tabs>
             )}

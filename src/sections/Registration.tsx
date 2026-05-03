@@ -32,6 +32,7 @@ export default function Registration() {
   const [studentClass, setStudentClass] = useState<string>('');
   const [schoolName, setSchoolName] = useState('');
   const [guardianContact, setGuardianContact] = useState('');
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [paymentRef, setPaymentRef] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -44,6 +45,15 @@ export default function Registration() {
 
   const handleClassChange = (val: string) => {
     setStudentClass(val);
+    setSelectedSubjects([]); // reset subjects when class changes
+  };
+
+  const toggleSubject = (subject: string) => {
+    setSelectedSubjects((prev) =>
+      prev.includes(subject)
+        ? prev.filter((s) => s !== subject)
+        : [...prev, subject]
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,7 +70,7 @@ export default function Registration() {
       class: Number(studentClass),
       schoolName,
       guardianContact,
-      selectedSubjects: studentClass === '8' ? class8Subjects : class10Subjects,
+      selectedSubjects,
       totalAmount: REGISTRATION_FEE,
       paymentRefNumber: paymentRef,
     });
@@ -105,11 +115,16 @@ export default function Registration() {
                   <span className="text-gray-500">School</span>
                   <span className="font-semibold text-gray-900">{enrollmentDetails.schoolName}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Subjects Included</span>
-                  <span className="font-semibold text-gray-900 text-right text-sm">
-                    All subjects for Class {enrollmentDetails.class}
-                  </span>
+                <div className="flex flex-col gap-1">
+                  <span className="text-gray-500">Selected Subjects</span>
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {(enrollmentDetails.selectedSubjects || []).length > 0
+                      ? enrollmentDetails.selectedSubjects.map((s) => (
+                          <span key={s} className="bg-violet-100 text-violet-700 text-xs font-medium px-2.5 py-1 rounded-full">{s}</span>
+                        ))
+                      : <span className="text-sm text-gray-500">None selected</span>
+                    }
+                  </div>
                 </div>
                 <div className="flex justify-between border-t pt-3 mt-2">
                   <span className="text-gray-500">Registration Fee Paid</span>
@@ -141,6 +156,7 @@ export default function Registration() {
                   setStudentClass('');
                   setSchoolName('');
                   setGuardianContact('');
+                  setSelectedSubjects([]);
                   setPaymentRef('');
                 }}
                 className="bg-violet-600 hover:bg-violet-700"
@@ -255,22 +271,42 @@ export default function Registration() {
                 </div>
               </div>
 
-              {/* Subjects included preview */}
+              {/* Subject selection — only shown after class is picked */}
               {studentClass && (
                 <div className="bg-violet-50 border border-violet-200 rounded-xl p-5">
-                  <div className="flex items-center gap-2 mb-3">
-                    <BadgeCheck className="w-5 h-5 text-violet-600" />
-                    <span className="font-semibold text-violet-800">Included in your Rs. 499 Registration:</span>
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <BadgeCheck className="w-5 h-5 text-violet-600" />
+                      <span className="font-semibold text-violet-800">Select Your Subjects</span>
+                    </div>
+                    <span className="text-xs text-violet-500">{selectedSubjects.length} selected</span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {subjectsForClass.map((s) => (
-                      <span key={s} className="bg-white border border-violet-200 text-violet-700 text-xs font-medium px-3 py-1 rounded-full">
-                        {s}
-                      </span>
-                    ))}
+                  <div className="grid grid-cols-2 gap-2">
+                    {subjectsForClass.map((s) => {
+                      const checked = selectedSubjects.includes(s);
+                      return (
+                        <button
+                          key={s}
+                          type="button"
+                          onClick={() => toggleSubject(s)}
+                          className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium text-left transition-all ${
+                            checked
+                              ? 'bg-violet-600 border-violet-600 text-white shadow-sm'
+                              : 'bg-white border-gray-200 text-gray-700 hover:border-violet-300 hover:bg-violet-50'
+                          }`}
+                        >
+                          <span className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-all ${
+                            checked ? 'bg-white border-white' : 'border-gray-300'
+                          }`}>
+                            {checked && <span className="text-violet-600 text-xs font-bold">✓</span>}
+                          </span>
+                          {s}
+                        </button>
+                      );
+                    })}
                   </div>
                   <p className="text-xs text-violet-500 mt-3">
-                    From month 2, you choose subjects at Rs. 199/subject.
+                    ✅ All selected subjects are included in your Rs. 499 first month fee.
                   </p>
                 </div>
               )}
@@ -337,6 +373,7 @@ export default function Registration() {
                   !studentClass ||
                   !schoolName ||
                   !guardianContact ||
+                  selectedSubjects.length === 0 ||
                   !paymentRef
                 }
                 className="w-full bg-violet-600 hover:bg-violet-700 text-lg py-6 rounded-xl font-bold disabled:opacity-50 transition-all"
