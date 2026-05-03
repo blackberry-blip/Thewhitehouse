@@ -33,6 +33,7 @@ import {
   Clock,
   ArrowLeft,
   RefreshCw,
+  type LucideIcon,
 } from 'lucide-react';
 
 const ADMIN_USER = 'admin';
@@ -292,10 +293,13 @@ export default function Admin() {
             { label: 'Verified', value: stats.verified, icon: CheckCircle2, color: 'text-green-600' },
             { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-yellow-600' },
             { label: 'Revenue', value: `Rs.${stats.revenue}`, icon: IndianRupee, color: 'text-violet-700' },
-          ].map(({ label, value, icon: Icon, color }) => (
+          ].map(({ label, value, icon: Icon, color }: { label: string; value: string | number; icon: LucideIcon; color: string }) => (
             <Card key={label} className="border-0 shadow-sm">
               <CardContent className="p-4">
-                <p className="text-xs text-gray-500 mb-1">{label}</p>
+                <div className="flex items-center justify-between mb-1">
+                  <p className="text-xs text-gray-500">{label}</p>
+                  <Icon className={`w-4 h-4 ${color} opacity-40`} />
+                </div>
                 <p className={`text-xl font-bold ${color}`}>{value}</p>
               </CardContent>
             </Card>
