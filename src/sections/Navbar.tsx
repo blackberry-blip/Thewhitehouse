@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router'
 import { Menu, X, GraduationCap } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 // Map nav hrefs to their mobile wrapper div IDs
 const sectionWrappers: Record<string, string> = {
@@ -33,7 +31,7 @@ export default function Navbar() {
   const handleMobileNavClick = (href: string) => {
     setIsOpen(false);
 
-    // If this section has a mobile wrapper, reveal it first
+    // Reveal hidden section on mobile if needed
     const wrapperId = sectionWrappers[href];
     if (wrapperId) {
       const wrapper = document.getElementById(wrapperId);
@@ -43,45 +41,52 @@ export default function Navbar() {
       }
     }
 
-    // Scroll to the section after a small delay so DOM updates
+    // Scroll to section after DOM updates
     setTimeout(() => {
-      const sectionId = href.replace('#', '');
-      const el = document.getElementById(sectionId);
-      if (el) {
-        el.scrollIntoView({ behavior: 'smooth' });
-      }
+      const el = document.getElementById(href.replace('#', ''));
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
     }, 50);
   };
 
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
-          ? 'bg-white/95 backdrop-blur-md shadow-md'
-          : 'bg-transparent'
+        scrolled ? 'bg-white/95 backdrop-blur-md shadow-md' : 'bg-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
+
+          {/* Logo */}
           <a href="#home" className="flex items-center gap-2">
             <GraduationCap
               className={`w-8 h-8 ${scrolled ? 'text-violet-700' : 'text-white'}`}
             />
-            <span
-              className={`font-bold text-xl ${
-                scrolled ? 'text-violet-700' : 'text-white'
-              }`}
-            >
+            <span className={`font-bold text-xl ${scrolled ? 'text-violet-700' : 'text-white'}`}>
               The White House
             </span>
           </a>
 
+          {/* Desktop nav links */}
+          <div className="hidden md:flex items-center gap-6">
+            {navLinks.map((link) => (
+              <a
+                key={link.href}
+                href={link.href}
+                className={`text-sm font-medium hover:opacity-80 transition-opacity ${
+                  scrolled ? 'text-gray-700' : 'text-white'
+                }`}
+              >
+                {link.label}
+              </a>
+            ))}
           </div>
 
           {/* Mobile hamburger */}
           <button
             className="md:hidden p-2"
             onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle menu"
           >
             {isOpen ? (
               <X className={scrolled ? 'text-gray-800' : 'text-white'} />
@@ -89,17 +94,18 @@ export default function Navbar() {
               <Menu className={scrolled ? 'text-gray-800' : 'text-white'} />
             )}
           </button>
+
         </div>
       </div>
 
       {/* Mobile menu */}
       {isOpen && (
         <div className="md:hidden bg-white border-t shadow-lg">
-          <div className="px-4 py-3 space-y-2">
+          <div className="px-4 py-3 space-y-1">
             {navLinks.map((link) => (
               <button
                 key={link.href}
-                className="block w-full text-left text-gray-700 hover:text-violet-700 font-medium py-2"
+                className="block w-full text-left text-gray-700 hover:text-violet-700 font-medium py-2.5 border-b border-gray-50 last:border-0"
                 onClick={() => handleMobileNavClick(link.href)}
               >
                 {link.label}
