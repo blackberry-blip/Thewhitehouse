@@ -12,8 +12,18 @@ import {
 } from '@/components/ui/select';
 import { useRegistrations } from '@/hooks/useRegistrations';
 import type { StudentRegistration } from '@/types';
-import { CheckCircle, Smartphone, CreditCard } from 'lucide-react';
+import { CheckCircle, CreditCard, Sparkles, BadgeCheck } from 'lucide-react';
 
+const class8Subjects = ['English', 'Mathematics', 'Science', 'Social Studies'];
+const class10Subjects = [
+  'English',
+  'Mathematics',
+  'Science',
+  'Social Studies',
+  'Optional Mathematics',
+  'Accountancy',
+  'Economics',
+];
 
 export default function Registration() {
   const { addRegistration } = useRegistrations();
@@ -22,32 +32,23 @@ export default function Registration() {
   const [studentClass, setStudentClass] = useState<string>('');
   const [schoolName, setSchoolName] = useState('');
   const [guardianContact, setGuardianContact] = useState('');
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
   const [paymentRef, setPaymentRef] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [enrollmentDetails, setEnrollmentDetails] =
     useState<StudentRegistration | null>(null);
 
-  const totalAmount = selectedSubjects.length * 199;
+  // Fixed Rs. 499 registration fee (first month all-inclusive)
+  const REGISTRATION_FEE = 499;
 
   const handleClassChange = (val: string) => {
     setStudentClass(val);
-    setSelectedSubjects([]);
   };
-
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (
-      !fullName ||
-      !age ||
-      !studentClass ||
-      !schoolName ||
-      !guardianContact ||
-      !paymentRef
-    )
+    if (!fullName || !age || !studentClass || !schoolName || !guardianContact || !paymentRef)
       return;
 
     setSubmitting(true);
@@ -59,8 +60,8 @@ export default function Registration() {
       class: Number(studentClass),
       schoolName,
       guardianContact,
-      selectedSubjects,
-      totalAmount,
+      selectedSubjects: studentClass === '8' ? class8Subjects : class10Subjects,
+      totalAmount: REGISTRATION_FEE,
       paymentRefNumber: paymentRef,
     });
 
@@ -70,10 +71,11 @@ export default function Registration() {
       setEnrollmentDetails(saved);
       setSubmitted(true);
     } else {
-      setSubmitError('Registration failed. Please try again.');
+      setSubmitError('Registration failed. Please try again or contact us.');
     }
   };
 
+  // Success screen
   if (submitted && enrollmentDetails) {
     return (
       <section id="register" className="py-20 bg-violet-50">
@@ -84,50 +86,38 @@ export default function Registration() {
                 <CheckCircle className="w-10 h-10 text-green-600" />
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                Registration Successful!
+                🎉 You're In! Registration Received.
               </h2>
               <p className="text-gray-600 mb-6">
-                Thank you for enrolling with The White House.
+                Welcome to The White House, {enrollmentDetails.fullName}! Our team will verify your payment and reach out within 24 hours with your class link.
               </p>
 
               <div className="bg-gray-50 rounded-xl p-6 text-left space-y-3 mb-6">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Student Name</span>
-                  <span className="font-semibold text-gray-900">
-                    {enrollmentDetails.fullName}
-                  </span>
+                  <span className="text-gray-500">Student</span>
+                  <span className="font-semibold text-gray-900">{enrollmentDetails.fullName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Class</span>
-                  <span className="font-semibold text-gray-900">
-                    Class {enrollmentDetails.class}
-                  </span>
+                  <span className="font-semibold text-gray-900">Class {enrollmentDetails.class}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">School</span>
-                  <span className="font-semibold text-gray-900">
-                    {enrollmentDetails.schoolName}
-                  </span>
+                  <span className="font-semibold text-gray-900">{enrollmentDetails.schoolName}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Subjects</span>
-                  <span className="font-semibold text-gray-900">
-                    {enrollmentDetails.selectedSubjects.length > 0
-                      ? enrollmentDetails.selectedSubjects.join(', ')
-                      : 'Not selected'}
+                  <span className="text-gray-500">Subjects Included</span>
+                  <span className="font-semibold text-gray-900 text-right text-sm">
+                    All subjects for Class {enrollmentDetails.class}
                   </span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Total Paid</span>
-                  <span className="font-bold text-violet-700">
-                    Rs. {enrollmentDetails.totalAmount}
-                  </span>
+                <div className="flex justify-between border-t pt-3 mt-2">
+                  <span className="text-gray-500">Registration Fee Paid</span>
+                  <span className="font-bold text-violet-700 text-lg">Rs. {enrollmentDetails.totalAmount}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Payment Ref</span>
-                  <span className="font-semibold text-gray-900">
-                    {enrollmentDetails.paymentRefNumber}
-                  </span>
+                  <span className="font-semibold text-gray-900">{enrollmentDetails.paymentRefNumber}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Status</span>
@@ -135,6 +125,11 @@ export default function Registration() {
                     Pending Admin Verification
                   </span>
                 </div>
+              </div>
+
+              <div className="bg-violet-50 border border-violet-200 rounded-xl p-4 text-sm text-violet-700 mb-6">
+                <p className="font-semibold mb-1">📌 What happens next?</p>
+                <p>From month 2 onwards, you pay <strong>Rs. 199 per subject</strong> you want to continue. No pressure, pick what you need.</p>
               </div>
 
               <Button
@@ -146,7 +141,6 @@ export default function Registration() {
                   setStudentClass('');
                   setSchoolName('');
                   setGuardianContact('');
-                  setSelectedSubjects([]);
                   setPaymentRef('');
                 }}
                 className="bg-violet-600 hover:bg-violet-700"
@@ -160,136 +154,173 @@ export default function Registration() {
     );
   }
 
+  const subjectsForClass = studentClass === '8' ? class8Subjects : class10Subjects;
+
   return (
     <section id="register" className="py-20 bg-violet-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Student Registration
+
+        {/* Header */}
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center gap-2 bg-yellow-100 border border-yellow-300 rounded-full px-4 py-1.5 mb-4">
+            <Sparkles className="w-4 h-4 text-yellow-600" />
+            <span className="text-yellow-700 text-sm font-semibold">Limited Seats Available</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">
+            Start Your Journey Today
           </h2>
-          <p className="text-lg text-gray-600">
-            Fill in your details, select your subjects, and complete payment via
-            eSewa.
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            One-time registration fee of <span className="font-bold text-violet-700">Rs. 499</span> covers your entire first month — all subjects, all classes, unlimited access.
           </p>
+        </div>
+
+        {/* Value cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          {[
+            { icon: '🎓', title: 'First Month', desc: 'Rs. 499 — all subjects included' },
+            { icon: '📚', title: 'Month 2 onwards', desc: 'Rs. 199 per subject you choose' },
+            { icon: '💡', title: 'Tech-First Classes', desc: 'Interactive, live, digital tools' },
+          ].map((item) => (
+            <div key={item.title} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
+              <div className="text-2xl mb-2">{item.icon}</div>
+              <div className="font-bold text-gray-900 text-sm">{item.title}</div>
+              <div className="text-gray-500 text-xs mt-1">{item.desc}</div>
+            </div>
+          ))}
         </div>
 
         <Card className="border-0 shadow-xl">
           <CardContent className="p-6 sm:p-10">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="fullName">Full Name</Label>
-                  <Input
-                    id="fullName"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Enter full name"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="age">Age</Label>
-                  <Input
-                    id="age"
-                    type="number"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    placeholder="Enter age"
-                    min={10}
-                    max={20}
-                    required
-                  />
+
+              {/* Student details */}
+              <div>
+                <h3 className="font-bold text-gray-800 mb-4 text-lg">Student Details</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="space-y-2">
+                    <Label htmlFor="fullName">Full Name</Label>
+                    <Input
+                      id="fullName"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Student's full name"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="age">Age</Label>
+                    <Input
+                      id="age"
+                      type="number"
+                      value={age}
+                      onChange={(e) => setAge(e.target.value)}
+                      placeholder="Age"
+                      min={10}
+                      max={20}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="class">Class</Label>
+                    <Select value={studentClass} onValueChange={handleClassChange}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select class" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="8">Class 8</SelectItem>
+                        <SelectItem value="10">Class 10</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="schoolName">School Name</Label>
+                    <Input
+                      id="schoolName"
+                      value={schoolName}
+                      onChange={(e) => setSchoolName(e.target.value)}
+                      placeholder="Your school name"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2 sm:col-span-2">
+                    <Label htmlFor="guardianContact">Guardian's Phone Number</Label>
+                    <Input
+                      id="guardianContact"
+                      value={guardianContact}
+                      onChange={(e) => setGuardianContact(e.target.value)}
+                      placeholder="e.g. 9801234567"
+                      required
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="class">Class</Label>
-                  <Select
-                    value={studentClass}
-                    onValueChange={handleClassChange}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select class" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="8">Class 8</SelectItem>
-                      <SelectItem value="10">Class 10</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="schoolName">School Name</Label>
-                  <Input
-                    id="schoolName"
-                    value={schoolName}
-                    onChange={(e) => setSchoolName(e.target.value)}
-                    placeholder="Enter school name"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="guardianContact">Guardian Contact Number</Label>
-                <Input
-                  id="guardianContact"
-                  value={guardianContact}
-                  onChange={(e) => setGuardianContact(e.target.value)}
-                  placeholder="Enter contact number"
-                  required
-                />
-              </div>
-
+              {/* Subjects included preview */}
               {studentClass && (
-                <div className="bg-violet-50 border border-violet-200 rounded-xl p-5 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-gray-700 font-medium">Total Amount</span>
-                    <span className="text-2xl font-bold text-violet-700">
-                      Rs. {totalAmount}
-                    </span>
+                <div className="bg-violet-50 border border-violet-200 rounded-xl p-5">
+                  <div className="flex items-center gap-2 mb-3">
+                    <BadgeCheck className="w-5 h-5 text-violet-600" />
+                    <span className="font-semibold text-violet-800">Included in your Rs. 499 Registration:</span>
                   </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-start gap-3 bg-white rounded-lg p-4 border border-gray-100">
-                      <Smartphone className="w-5 h-5 text-violet-600 mt-0.5 shrink-0" />
-                      <div>
-                        <p className="font-semibold text-gray-900 text-sm">
-                          Pay via eSewa App
-                        </p>
-                        <p className="text-gray-600 text-sm mt-1">
-                          Send payment to{' '}
-                          <span className="font-bold text-violet-700">
-                            9701494422
-                          </span>
-                        </p>
-                        <p className="text-gray-500 text-xs mt-1">
-                          Open your eSewa app → Send Money → Enter number
-                          9701494422 → Amount Rs. {totalAmount}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="paymentRef" className="flex items-center gap-2">
-                        <CreditCard className="w-4 h-4 text-violet-600" />
-                        eSewa Transaction Code / Reference Number
-                      </Label>
-                      <Input
-                        id="paymentRef"
-                        value={paymentRef}
-                        onChange={(e) => setPaymentRef(e.target.value)}
-                        placeholder="Enter transaction reference number"
-                        required
-                      />
-                      <p className="text-xs text-gray-500">
-                        You will find this in your eSewa transaction history or
-                        confirmation SMS.
-                      </p>
-                    </div>
+                  <div className="flex flex-wrap gap-2">
+                    {subjectsForClass.map((s) => (
+                      <span key={s} className="bg-white border border-violet-200 text-violet-700 text-xs font-medium px-3 py-1 rounded-full">
+                        {s}
+                      </span>
+                    ))}
                   </div>
+                  <p className="text-xs text-violet-500 mt-3">
+                    From month 2, you choose subjects at Rs. 199/subject.
+                  </p>
                 </div>
               )}
+
+              {/* Payment section */}
+              <div>
+                <h3 className="font-bold text-gray-800 mb-4 text-lg">Payment — Rs. 499</h3>
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-5">
+
+                  {/* QR code + instructions */}
+                  <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start mb-5">
+                    <div className="shrink-0 text-center">
+                      <img
+                        src="/esewa-qr.png"
+                        alt="eSewa QR Code"
+                        className="w-40 h-40 rounded-xl border-2 border-green-200 object-contain bg-white p-2 mx-auto"
+                      />
+                      <p className="text-xs text-gray-500 mt-2">Scan with eSewa App</p>
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 mb-1">How to pay:</p>
+                      <ol className="text-sm text-gray-600 space-y-1 list-decimal list-inside">
+                        <li>Open your <span className="font-semibold text-green-700">eSewa</span> app</li>
+                        <li>Scan the QR code <span className="text-gray-400">OR</span> send to <span className="font-bold text-gray-900">9701494422</span></li>
+                        <li>Enter amount: <span className="font-bold text-violet-700">Rs. 499</span></li>
+                        <li>Complete the payment</li>
+                        <li>Copy the <span className="font-semibold">Transaction Reference Number</span> from your eSewa confirmation</li>
+                      </ol>
+                    </div>
+                  </div>
+
+                  {/* Transaction ref input */}
+                  <div className="space-y-2">
+                    <Label htmlFor="paymentRef" className="flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 text-violet-600" />
+                      eSewa Transaction Reference Number
+                    </Label>
+                    <Input
+                      id="paymentRef"
+                      value={paymentRef}
+                      onChange={(e) => setPaymentRef(e.target.value)}
+                      placeholder="e.g. RC2025XXXXXX"
+                      required
+                    />
+                    <p className="text-xs text-gray-500">
+                      Found in eSewa app → Transaction History → Tap your payment
+                    </p>
+                  </div>
+                </div>
+              </div>
 
               {submitError && (
                 <p className="text-sm text-red-600 text-center bg-red-50 border border-red-200 rounded-lg p-3">
@@ -308,10 +339,14 @@ export default function Registration() {
                   !guardianContact ||
                   !paymentRef
                 }
-                className="w-full bg-violet-600 hover:bg-violet-700 text-lg py-6 rounded-xl font-semibold disabled:opacity-50"
+                className="w-full bg-violet-600 hover:bg-violet-700 text-lg py-6 rounded-xl font-bold disabled:opacity-50 transition-all"
               >
-                {submitting ? 'Submitting...' : 'Complete Registration'}
+                {submitting ? 'Submitting...' : '🚀 Complete Registration — Rs. 499'}
               </Button>
+
+              <p className="text-center text-xs text-gray-400">
+                Your seat will be confirmed once our admin verifies the payment. Usually within a few hours.
+              </p>
             </form>
           </CardContent>
         </Card>

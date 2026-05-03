@@ -20,6 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useRegistrations } from '@/hooks/useRegistrations';
 import {
   LogOut,
@@ -31,10 +32,87 @@ import {
   CheckCircle2,
   Clock,
   ArrowLeft,
+  RefreshCw,
 } from 'lucide-react';
 
 const ADMIN_USER = 'admin';
 const ADMIN_PASS = 'whitehouse2026';
+
+function RegistrationTable({
+  rows,
+  onVerify,
+}: {
+  rows: ReturnType<typeof useRegistrations>['registrations'];
+  onVerify: (id: string) => void;
+}) {
+  if (rows.length === 0) {
+    return (
+      <div className="text-center py-12 text-gray-400">
+        No registrations found.
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto">
+      <Table>
+        <TableHeader>
+          <TableRow className="bg-gray-50">
+            <TableHead className="whitespace-nowrap">Name</TableHead>
+            <TableHead>Age</TableHead>
+            <TableHead>School</TableHead>
+            <TableHead className="whitespace-nowrap">Guardian #</TableHead>
+            <TableHead>Amount</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="whitespace-nowrap">Ref #</TableHead>
+            <TableHead>Date</TableHead>
+            <TableHead>Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((r) => (
+            <TableRow key={r.id} className="hover:bg-gray-50">
+              <TableCell className="font-medium whitespace-nowrap">{r.fullName}</TableCell>
+              <TableCell>{r.age}</TableCell>
+              <TableCell className="max-w-[140px] truncate text-sm">{r.schoolName}</TableCell>
+              <TableCell className="whitespace-nowrap text-sm">{r.guardianContact}</TableCell>
+              <TableCell className="font-semibold text-violet-700">Rs. {r.totalAmount}</TableCell>
+              <TableCell>
+                <Badge
+                  className={
+                    r.paymentStatus === 'verified'
+                      ? 'bg-green-100 text-green-700 hover:bg-green-100 border-green-200'
+                      : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100 border-yellow-200'
+                  }
+                >
+                  {r.paymentStatus === 'verified' ? '✓ Verified' : '⏳ Pending'}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-xs font-mono text-gray-600">{r.paymentRefNumber}</TableCell>
+              <TableCell className="text-xs whitespace-nowrap text-gray-500">
+                {new Date(r.registrationDate).toLocaleDateString('en-NP')}
+              </TableCell>
+              <TableCell>
+                {r.paymentStatus === 'pending' ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onVerify(r.id)}
+                    className="text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700 whitespace-nowrap"
+                  >
+                    Verify ✓
+                  </Button>
+                ) : (
+                  <span className="text-xs text-gray-400">Done</span>
+                )}
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
 
 export default function Admin() {
   const navigate = useNavigate();
@@ -45,9 +123,8 @@ export default function Admin() {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  const { registrations, loading, error, verifyPayment, exportToCSV } = useRegistrations();
+  const { registrations, loading, error, verifyPayment, exportToCSV, refetch } = useRegistrations();
   const [searchQuery, setSearchQuery] = useState('');
-  const [filterClass, setFilterClass] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
   const handleLogin = (e: React.FormEvent) => {
@@ -68,37 +145,43 @@ export default function Admin() {
     setPassword('');
   };
 
-  const filteredRegistrations = useMemo(() => {
-    return registrations.filter((r) => {
+  const filterRows = (rows: typeof registrations) =>
+    rows.filter((r) => {
       const matchesSearch =
         searchQuery === '' ||
         r.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.schoolName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         r.guardianContact.includes(searchQuery) ||
         r.paymentRefNumber.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesClass =
-        filterClass === 'all' || r.class.toString() === filterClass;
-
-      const matchesStatus =
-        filterStatus === 'all' || r.paymentStatus === filterStatus;
-
-      return matchesSearch && matchesClass && matchesStatus;
+      const matchesStatus = filterStatus === 'all' || r.paymentStatus === filterStatus;
+      return matchesSearch && matchesStatus;
     });
-  }, [registrations, searchQuery, filterClass, filterStatus]);
 
-  const stats = useMemo(() => {
-    return {
-      total: registrations.length,
-      verified: registrations.filter((r) => r.paymentStatus === 'verified')
-        .length,
-      pending: registrations.filter((r) => r.paymentStatus === 'pending').length,
-      revenue: registrations
-        .filter((r) => r.paymentStatus === 'verified')
-        .reduce((sum, r) => sum + r.totalAmount, 0),
-    };
-  }, [registrations]);
+  const class8Rows = useMemo(
+    () => filterRows(registrations.filter((r) => r.class === 8)),
+    [registrations, searchQuery, filterStatus]
+  );
+  const class10Rows = useMemo(
+    () => filterRows(registrations.filter((r) => r.class === 10)),
+    [registrations, searchQuery, filterStatus]
+  );
+  const allRows = useMemo(
+    () => filterRows(registrations),
+    [registrations, searchQuery, filterStatus]
+  );
 
+  const stats = useMemo(() => ({
+    total: registrations.length,
+    class8: registrations.filter((r) => r.class === 8).length,
+    class10: registrations.filter((r) => r.class === 10).length,
+    verified: registrations.filter((r) => r.paymentStatus === 'verified').length,
+    pending: registrations.filter((r) => r.paymentStatus === 'pending').length,
+    revenue: registrations
+      .filter((r) => r.paymentStatus === 'verified')
+      .reduce((sum, r) => sum + r.totalAmount, 0),
+  }), [registrations]);
+
+  // ─── Login screen ───
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-violet-50 flex items-center justify-center p-4">
@@ -108,12 +191,8 @@ export default function Admin() {
               <div className="w-16 h-16 bg-violet-100 rounded-xl flex items-center justify-center mx-auto mb-4">
                 <GraduationCap className="w-8 h-8 text-violet-600" />
               </div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Admin Login
-              </h1>
-              <p className="text-gray-500 mt-1">
-                The White House Dashboard
-              </p>
+              <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
+              <p className="text-gray-500 mt-1">The White House Dashboard</p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
@@ -141,10 +220,7 @@ export default function Admin() {
               {loginError && (
                 <p className="text-sm text-red-600">{loginError}</p>
               )}
-              <Button
-                type="submit"
-                className="w-full bg-violet-600 hover:bg-violet-700"
-              >
+              <Button type="submit" className="w-full bg-violet-600 hover:bg-violet-700">
                 Login
               </Button>
             </form>
@@ -162,24 +238,34 @@ export default function Admin() {
     );
   }
 
+  // ─── Dashboard ───
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Header */}
       <header className="bg-white border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <GraduationCap className="w-7 h-7 text-violet-600" />
-            <h1 className="font-bold text-xl text-gray-900 hidden sm:block">
+            <h1 className="font-bold text-lg text-gray-900 hidden sm:block">
               The White House — Admin
             </h1>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => refetch()}
+              title="Refresh data"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Button>
             <Button
               variant="outline"
               size="sm"
               onClick={() => navigate('/')}
               className="hidden sm:flex"
             >
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4 mr-1" />
               Back
             </Button>
             <Button
@@ -188,7 +274,7 @@ export default function Admin() {
               onClick={handleLogout}
               className="text-red-600 hover:text-red-700 hover:bg-red-50"
             >
-              <LogOut className="w-4 h-4 mr-2" />
+              <LogOut className="w-4 h-4 mr-1" />
               Logout
             </Button>
           </div>
@@ -196,87 +282,43 @@ export default function Admin() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Total Students</p>
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stats.total}
-                  </p>
-                </div>
-                <Users className="w-8 h-8 text-violet-200" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Verified</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {stats.verified}
-                  </p>
-                </div>
-                <CheckCircle2 className="w-8 h-8 text-green-200" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-600">
-                    {stats.pending}
-                  </p>
-                </div>
-                <Clock className="w-8 h-8 text-yellow-200" />
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-0 shadow-sm">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Revenue</p>
-                  <p className="text-2xl font-bold text-violet-700">
-                    Rs. {stats.revenue}
-                  </p>
-                </div>
-                <IndianRupee className="w-8 h-8 text-violet-200" />
-              </div>
-            </CardContent>
-          </Card>
+
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+          {[
+            { label: 'Total', value: stats.total, icon: Users, color: 'text-gray-900' },
+            { label: 'Class 8', value: stats.class8, icon: GraduationCap, color: 'text-blue-600' },
+            { label: 'Class 10', value: stats.class10, icon: GraduationCap, color: 'text-indigo-600' },
+            { label: 'Verified', value: stats.verified, icon: CheckCircle2, color: 'text-green-600' },
+            { label: 'Pending', value: stats.pending, icon: Clock, color: 'text-yellow-600' },
+            { label: 'Revenue', value: `Rs.${stats.revenue}`, icon: IndianRupee, color: 'text-violet-700' },
+          ].map(({ label, value, icon: Icon, color }) => (
+            <Card key={label} className="border-0 shadow-sm">
+              <CardContent className="p-4">
+                <p className="text-xs text-gray-500 mb-1">{label}</p>
+                <p className={`text-xl font-bold ${color}`}>{value}</p>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
+        {/* Registrations Card */}
         <Card className="border-0 shadow-sm">
           <CardContent className="p-6">
+
+            {/* Toolbar */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-              <h2 className="text-lg font-bold text-gray-900">
-                Registrations
-              </h2>
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+              <h2 className="text-lg font-bold text-gray-900">Registrations</h2>
+              <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <Input
-                    placeholder="Search students..."
+                    placeholder="Search name, school, ref..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 w-full sm:w-64"
+                    className="pl-9 w-full sm:w-60"
                   />
                 </div>
-                <Select value={filterClass} onValueChange={setFilterClass}>
-                  <SelectTrigger className="w-full sm:w-32">
-                    <SelectValue placeholder="Class" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Classes</SelectItem>
-                    <SelectItem value="8">Class 8</SelectItem>
-                    <SelectItem value="10">Class 10</SelectItem>
-                  </SelectContent>
-                </Select>
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger className="w-full sm:w-36">
                     <SelectValue placeholder="Status" />
@@ -287,121 +329,48 @@ export default function Admin() {
                     <SelectItem value="pending">Pending</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button
-                  variant="outline"
-                  onClick={exportToCSV}
-                  className="shrink-0"
-                >
+                <Button variant="outline" onClick={exportToCSV} className="shrink-0">
                   <Download className="w-4 h-4 mr-2" />
                   Export CSV
                 </Button>
               </div>
             </div>
 
+            {/* Error */}
             {error && (
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-600">
-                Error loading registrations: {error}
+                Error: {error}
               </div>
             )}
 
+            {/* Loading */}
             {loading ? (
-              <div className="text-center py-12 text-gray-500">
-                Loading registrations...
-              </div>
+              <div className="text-center py-12 text-gray-400">Loading registrations...</div>
             ) : (
-            <div className="overflow-x-auto -mx-2">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Age</TableHead>
-                    <TableHead>Class</TableHead>
-                    <TableHead>School</TableHead>
-                    <TableHead>Guardian</TableHead>
-                    <TableHead>Subjects</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Ref #</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredRegistrations.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={11}
-                        className="text-center text-gray-500 py-8"
-                      >
-                        No registrations found.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredRegistrations.map((r) => (
-                      <TableRow key={r.id}>
-                        <TableCell className="font-medium">
-                          {r.fullName}
-                        </TableCell>
-                        <TableCell>{r.age}</TableCell>
-                        <TableCell>Class {r.class}</TableCell>
-                        <TableCell className="max-w-[120px] truncate">
-                          {r.schoolName}
-                        </TableCell>
-                        <TableCell>{r.guardianContact}</TableCell>
-                        <TableCell className="max-w-[160px]">
-                          <span className="text-xs">
-                            {r.selectedSubjects.join(', ')}
-                          </span>
-                        </TableCell>
-                        <TableCell className="font-medium">
-                          Rs. {r.totalAmount}
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            variant={
-                              r.paymentStatus === 'verified'
-                                ? 'default'
-                                : 'secondary'
-                            }
-                            className={
-                              r.paymentStatus === 'verified'
-                                ? 'bg-green-100 text-green-700 hover:bg-green-100'
-                                : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-100'
-                            }
-                          >
-                            {r.paymentStatus === 'verified'
-                              ? 'Verified'
-                              : 'Pending'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs font-mono">
-                          {r.paymentRefNumber}
-                        </TableCell>
-                        <TableCell className="text-xs whitespace-nowrap">
-                          {new Date(r.registrationDate).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          {r.paymentStatus === 'pending' ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => verifyPayment(r.id)}
-                              className="text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700"
-                            >
-                              Verify
-                            </Button>
-                          ) : (
-                            <span className="text-xs text-gray-400">
-                              Done
-                            </span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+              /* Class-wise tabs */
+              <Tabs defaultValue="all">
+                <TabsList className="mb-4">
+                  <TabsTrigger value="all">
+                    All ({allRows.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="class8">
+                    Class 8 ({class8Rows.length})
+                  </TabsTrigger>
+                  <TabsTrigger value="class10">
+                    Class 10 ({class10Rows.length})
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="all">
+                  <RegistrationTable rows={allRows} onVerify={verifyPayment} />
+                </TabsContent>
+                <TabsContent value="class8">
+                  <RegistrationTable rows={class8Rows} onVerify={verifyPayment} />
+                </TabsContent>
+                <TabsContent value="class10">
+                  <RegistrationTable rows={class10Rows} onVerify={verifyPayment} />
+                </TabsContent>
+              </Tabs>
             )}
           </CardContent>
         </Card>
