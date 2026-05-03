@@ -283,7 +283,7 @@ export default function Registration() {
                   {/* QR code — large and centered for easy scanning */}
                   <div className="flex flex-col items-center mb-5">
                     <img
-                      src="/esewa-qr.png"
+                      src="/esewa-qr.jpg"
                       alt="eSewa QR Code"
                       className="w-56 h-56 sm:w-64 sm:h-64 rounded-2xl border-2 border-green-200 object-contain bg-white p-3 shadow-md"
                     />
