@@ -76,32 +76,6 @@ export default function Navbar() {
             </span>
           </a>
 
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-6">
-            {navLinks.map((link) => (
-              <a
-                key={link.href}
-                href={link.href}
-                className={`text-sm font-medium hover:opacity-80 transition-opacity ${
-                  scrolled ? 'text-gray-700' : 'text-white'
-                }`}
-              >
-                {link.label}
-              </a>
-            ))}
-            <Link to="/admin">
-              <Button
-                variant="outline"
-                size="sm"
-                className={`${
-                  scrolled
-                    ? 'border-violet-700 text-violet-700 hover:bg-violet-50'
-                    : 'border-white text-white hover:bg-white/10'
-                }`}
-              >
-                Admin
-              </Button>
-            </Link>
           </div>
 
           {/* Mobile hamburger */}
@@ -131,13 +105,6 @@ export default function Navbar() {
                 {link.label}
               </button>
             ))}
-            <Link
-              to="/admin"
-              className="block text-violet-700 font-medium py-2"
-              onClick={() => setIsOpen(false)}
-            >
-              Admin Login
-            </Link>
           </div>
         </div>
       )}

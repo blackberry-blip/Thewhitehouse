@@ -33,6 +33,7 @@ import {
   Clock,
   ArrowLeft,
   RefreshCw,
+  Trash2,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -42,9 +43,11 @@ const ADMIN_PASS = 'whitehouse2026';
 function RegistrationTable({
   rows,
   onVerify,
+  onDelete,
 }: {
   rows: ReturnType<typeof useRegistrations>['registrations'];
   onVerify: (id: string) => void;
+  onDelete: (id: string) => void;
 }) {
   if (rows.length === 0) {
     return (
@@ -53,6 +56,12 @@ function RegistrationTable({
       </div>
     );
   }
+
+  const handleDelete = (id: string, name: string) => {
+    if (window.confirm(`Delete registration for "${name}"? This cannot be undone.`)) {
+      onDelete(id);
+    }
+  };
 
   return (
     <div className="overflow-x-auto">
@@ -67,7 +76,7 @@ function RegistrationTable({
             <TableHead>Status</TableHead>
             <TableHead className="whitespace-nowrap">Ref #</TableHead>
             <TableHead>Date</TableHead>
-            <TableHead>Action</TableHead>
+            <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -94,18 +103,29 @@ function RegistrationTable({
                 {new Date(r.registrationDate).toLocaleDateString('en-NP')}
               </TableCell>
               <TableCell>
-                {r.paymentStatus === 'pending' ? (
+                <div className="flex items-center gap-2">
+                  {r.paymentStatus === 'pending' ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => onVerify(r.id)}
+                      className="text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700 whitespace-nowrap"
+                    >
+                      Verify ✓
+                    </Button>
+                  ) : (
+                    <span className="text-xs text-gray-400">Verified</span>
+                  )}
                   <Button
                     size="sm"
-                    variant="outline"
-                    onClick={() => onVerify(r.id)}
-                    className="text-green-600 border-green-200 hover:bg-green-50 hover:text-green-700 whitespace-nowrap"
+                    variant="ghost"
+                    onClick={() => handleDelete(r.id, r.fullName)}
+                    className="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5"
+                    title="Delete registration"
                   >
-                    Verify ✓
+                    <Trash2 className="w-4 h-4" />
                   </Button>
-                ) : (
-                  <span className="text-xs text-gray-400">Done</span>
-                )}
+                </div>
               </TableCell>
             </TableRow>
           ))}
@@ -124,7 +144,7 @@ export default function Admin() {
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
 
-  const { registrations, loading, error, verifyPayment, exportToCSV, refetch } = useRegistrations();
+  const { registrations, loading, error, verifyPayment, deleteRegistration, exportToCSV, refetch } = useRegistrations();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
@@ -382,13 +402,13 @@ export default function Admin() {
                 </TabsList>
 
                 <TabsContent value="all">
-                  <RegistrationTable rows={allRows} onVerify={verifyPayment} />
+                  <RegistrationTable rows={allRows} onVerify={verifyPayment} onDelete={deleteRegistration} />
                 </TabsContent>
                 <TabsContent value="class8">
-                  <RegistrationTable rows={class8Rows} onVerify={verifyPayment} />
+                  <RegistrationTable rows={class8Rows} onVerify={verifyPayment} onDelete={deleteRegistration} />
                 </TabsContent>
                 <TabsContent value="class10">
-                  <RegistrationTable rows={class10Rows} onVerify={verifyPayment} />
+                  <RegistrationTable rows={class10Rows} onVerify={verifyPayment} onDelete={deleteRegistration} />
                 </TabsContent>
 
                 {/* Subject-wise breakdown */}

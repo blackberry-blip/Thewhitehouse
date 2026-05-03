@@ -81,6 +81,25 @@ export function useRegistrations() {
     }
   }, []);
 
+  // Delete a registration via the API
+  const deleteRegistration = useCallback(async (id: string) => {
+    setError(null);
+    try {
+      const res = await fetch('/api/registrations/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
+      if (!res.ok) {
+        throw new Error('Failed to delete registration');
+      }
+      setRegistrations((prev) => prev.filter((r) => r.id !== id));
+    } catch (err) {
+      console.error('Delete registration error:', err);
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    }
+  }, []);
+
   // CSV export (client-side from loaded data)
   const exportToCSV = useCallback(() => {
     const headers = [
@@ -125,6 +144,7 @@ export function useRegistrations() {
     error,
     addRegistration,
     verifyPayment,
+    deleteRegistration,
     exportToCSV,
     refetch: fetchRegistrations,
   };
