@@ -1,77 +1,61 @@
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Zap, Brain, TrendingUp } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export default function Hero() {
   return (
     <section
       id="home"
-      className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-violet-600 via-violet-700 to-violet-900"
+      className="relative min-h-screen flex items-center justify-center overflow-hidden"
+      style={{
+        background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
+      }}
     >
-      {/* Background blobs */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-10 w-72 h-72 rounded-full bg-white blur-3xl" />
-        <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full bg-violet-300 blur-3xl" />
+      {/* Subtle ambient glow — barely visible, premium feel */}
+      <div className="absolute inset-0 overflow-hidden">
+        <div
+          className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full opacity-20"
+          style={{ background: 'radial-gradient(circle, #7c3aed 0%, transparent 70%)' }}
+        />
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-20 pb-16">
+      {/* Content */}
+      <div className="relative z-10 max-w-4xl mx-auto px-6 text-center pt-24 pb-20">
 
-        {/* Main headline */}
-        <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-white tracking-tight mb-5 leading-tight">
-          Stop Memorizing.<br />
-          <span className="text-yellow-300">Start Understanding.</span>
-        </h1>
-
-        {/* Subheadline */}
-        <p className="text-lg sm:text-xl md:text-2xl text-violet-100 font-medium mb-4 max-w-3xl mx-auto leading-relaxed">
-          The White House is Nepal's first tech-powered online tuition platform — built to make students <span className="text-yellow-200 font-bold">think faster, score higher,</span> and solve real problems.
+        {/* Brand name — small, spaced, elevated */}
+        <p className="text-violet-400 text-xs sm:text-sm font-semibold tracking-[0.3em] uppercase mb-8 opacity-80">
+          The White House
         </p>
 
-        {/* Value props — 3 pills */}
-        <div className="flex flex-wrap justify-center gap-3 mb-8">
-          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
-            <Zap className="w-4 h-4 text-yellow-300 shrink-0" />
-            <span className="text-white text-sm font-medium">Live Interactive Classes</span>
-          </div>
-          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
-            <Brain className="w-4 h-4 text-yellow-300 shrink-0" />
-            <span className="text-white text-sm font-medium">Tech-First Teaching</span>
-          </div>
-          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-2">
-            <TrendingUp className="w-4 h-4 text-yellow-300 shrink-0" />
-            <span className="text-white text-sm font-medium">Proven Results</span>
-          </div>
-        </div>
+        {/* Main headline — the statement */}
+        <h1 className="text-4xl sm:text-6xl md:text-7xl font-black text-white leading-[1.1] tracking-tight mb-6">
+          Your child deserves<br />
+          <span className="text-transparent bg-clip-text"
+            style={{ backgroundImage: 'linear-gradient(90deg, #a78bfa, #818cf8)' }}>
+            better than memorization.
+          </span>
+        </h1>
 
-        {/* CTA */}
+        {/* One clean subline */}
+        <p className="text-base sm:text-lg text-white/50 max-w-xl mx-auto mb-12 leading-relaxed font-light">
+          We teach students to think — using technology, live instruction,
+          and a method built for the generation that will shape tomorrow.
+        </p>
+
+        {/* Single CTA — clean, no emoji */}
         <a href="#register">
           <Button
             size="lg"
-            className="bg-yellow-400 text-violet-900 hover:bg-yellow-300 font-extrabold text-lg px-10 py-6 rounded-xl shadow-2xl hover:shadow-yellow-400/30 transition-all hover:-translate-y-1 active:scale-95"
+            className="group bg-white text-gray-900 hover:bg-white/90 font-bold text-base px-8 py-6 rounded-full shadow-2xl transition-all duration-300 hover:shadow-violet-500/20 hover:scale-105"
           >
-            Enroll Now — Rs. 499
-            <ArrowRight className="ml-2 w-5 h-5" />
+            Enroll Now
+            <ArrowRight className="ml-2 w-4 h-4 transition-transform group-hover:translate-x-1" />
           </Button>
         </a>
-        <p className="text-violet-300 text-sm mt-3">First month all-inclusive · Cancel anytime</p>
 
-        {/* Stats — desktop only */}
-        <div className="mt-14 hidden md:grid grid-cols-3 gap-4 max-w-lg mx-auto">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-white">500+</div>
-            <div className="text-sm text-violet-200">Students Enrolled</div>
-          </div>
-          <div className="text-center border-x border-white/20">
-            <div className="text-3xl font-bold text-white">10+</div>
-            <div className="text-sm text-violet-200">Subjects Covered</div>
-          </div>
-          <div className="text-center">
-            <div className="text-3xl font-bold text-white">Class 8 & 10</div>
-            <div className="text-sm text-violet-200">Expert Teachers</div>
-          </div>
-        </div>
       </div>
 
-      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent" />
+      {/* Bottom fade */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent" />
     </section>
   );
 }
